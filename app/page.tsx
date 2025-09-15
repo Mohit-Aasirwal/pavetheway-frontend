@@ -4,27 +4,44 @@ import OnboardingStep from "@/components/OnboardingStep";
 import ResumePreview from "@/components/ResumePreview";
 import { useResumeStore } from "@/hooks/ResumeStore";
 import { saveResumeData, exportResumePDF } from "@/lib/api";
+import { ResumeData } from "@/types/ResumeData"; // adjust path
 
-const steps = [
-  { key: "name", label: "Full Name" },
-  { key: "title", label: "Professional Title" },
-  { key: "email", label: "Email Address" },
-  { key: "phone", label: "Phone Number" },
-  { key: "location", label: "Location" },
-  { key: "linkedin", label: "LinkedIn URL" },
-  { key: "github", label: "GitHub URL" },
-  { key: "portfolio", label: "Portfolio URL" },
-  { key: "summary", label: "Professional Summary" },
+type StepKey = keyof ResumeData;
+
+interface Step {
+  key: StepKey;
+  label: string;
+  type?:
+    | "text"
+    | "array"
+    | "education"
+    | "experience"
+    | "projects"
+    | "organizations"
+    | "certifications"
+    | "awards";
+}
+
+const steps: Step[] = [
+  { key: "full_name", label: "Full Name", type: "text" },
+  { key: "title", label: "Professional Title", type: "text" },
+  { key: "email", label: "Email Address", type: "text" },
+  { key: "phone", label: "Phone Number", type: "text" },
+  { key: "location", label: "Location", type: "text" },
+  { key: "linkedin", label: "LinkedIn URL", type: "text" },
+  { key: "github", label: "GitHub URL", type: "text" },
+  { key: "portfolio", label: "Portfolio URL", type: "text" },
+  { key: "objective", label: "Objective", type: "text" },
   { key: "education", label: "Education", type: "education" },
   { key: "experience", label: "Work Experience", type: "experience" },
-  { key: "skills", label: "Skills" },
+  { key: "skills", label: "Skills", type: "array" },
   { key: "projects", label: "Projects", type: "projects" },
-  { key: "languages", label: "Languages" },
-  { key: "certifications", label: "Certifications" },
-  { key: "awards", label: "Awards" },
-  { key: "organizations", label: "Organizations" },
-  { key: "coCurricular", label: "Co-curricular Activities" },
-  { key: "declarations", label: "Declaration" },
+  { key: "languages", label: "Languages", type: "array" },
+  { key: "certifications", label: "Certifications", type: "certifications" },
+  { key: "awards", label: "Awards", type: "awards" },
+  { key: "organizations", label: "Organizations", type: "organizations" },
+  { key: "coCurricular", label: "Co-curricular Activities", type: "array" },
+  { key: "declarations", label: "Declaration", type: "text" },
 ];
 
 export default function Home() {
@@ -35,7 +52,7 @@ export default function Home() {
   // Load resume data on mount
   useEffect(() => {
     loadResume();
-  }, []);
+  }, [loadResume]);
 
   // Auto-save when resume changes
   useEffect(() => {
@@ -55,7 +72,7 @@ export default function Home() {
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+      setCurrentStep((prev) => prev + 1);
     } else {
       exportResumePDF();
     }
@@ -63,11 +80,32 @@ export default function Home() {
 
   const handleBack = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+      setCurrentStep((prev) => prev - 1);
     }
   };
 
   const currentStepData = steps[currentStep];
+  const fieldKey = currentStepData.key;
+  const fieldValue = resume[fieldKey as keyof typeof resume];
+
+  // Helper: return proper default type if null
+  // Helper: return proper default type if null
+  const getDefaultValue = (step: Step): string | any[] => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    if (
+      [
+        "education",
+        "experience",
+        "projects",
+        "organizations",
+        "certifications",
+        "awards",
+        "array",
+      ].includes(step.type || "")
+    ) {
+      return [];
+    }
+    return "";
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
@@ -92,26 +130,26 @@ export default function Home() {
                 style={{
                   width: `${((currentStep + 1) / steps.length) * 100}%`,
                 }}
-              ></div>
+              />
             </div>
           </div>
 
           <OnboardingStep
-            stepKey={currentStepData.key}
+            stepKey={fieldKey}
             stepType={currentStepData.type}
             value={
-              resume[currentStepData.key as keyof typeof resume] ||
-              (currentStepData.type ? [] : "")
+              (fieldValue as string | any[]) ?? getDefaultValue(currentStepData) // eslint-disable-line @typescript-eslint/no-explicit-any
             }
-            onChange={(value) =>
-              setResume({ ...resume, [currentStepData.key]: value })
+            onChange={(value: ResumeData[typeof fieldKey]) =>
+              setResume({ ...resume, [fieldKey]: value })
             }
-            onAddItem={(item) => {
-              const field = currentStepData.key;
-              const currentItems = Array.isArray(resume[field])
-                ? resume[field]
-                : [];
-              setResume({ ...resume, [field]: [...currentItems, item] });
+            onAddItem={(item: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+              if (Array.isArray(resume[fieldKey])) {
+                const currentItems = resume[fieldKey] as any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+                setResume({ ...resume, [fieldKey]: [...currentItems, item] });
+              } else {
+                setResume({ ...resume, [fieldKey]: [item] as any }); // eslint-disable-line @typescript-eslint/no-explicit-any
+              }
             }}
           />
 
@@ -134,7 +172,7 @@ export default function Home() {
 
         {/* Preview Section */}
         <div className="bg-white rounded-lg shadow-md p-4 h-full overflow-y-auto">
-          <ResumePreview data={resume} />
+          <ResumePreview data={resume as any} /> {/* eslint-disable-line @typescript-eslint/no-explicit-any */}
         </div>
       </div>
     </div>

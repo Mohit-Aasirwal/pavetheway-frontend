@@ -1,8 +1,5 @@
-import { create } from "zustand";
-import { fetchResumeData } from "@/lib/api";
-
-interface ResumeData {
-  full_name: string | null;
+export interface ResumeData {
+  full_name: string | undefined;
   title: string | null;
   email: string | null;
   phone: string | null;
@@ -27,7 +24,7 @@ interface ResumeData {
 }
 
 // Example supporting types
-interface EducationItem {
+export interface EducationItem {
   institution: string;
   degree: string;
   field: string;
@@ -35,7 +32,7 @@ interface EducationItem {
   endDate: string;
 }
 
-interface ExperienceItem {
+export interface ExperienceItem {
   company: string;
   position: string;
   description: string;
@@ -43,50 +40,27 @@ interface ExperienceItem {
   endDate: string;
 }
 
-interface ProjectItem {
+export interface ProjectItem {
   name: string;
   description: string;
   link?: string;
 }
 
-interface OrganizationItem {
+export interface OrganizationItem {
   name: string;
   role: string;
   startDate: string;
   endDate: string;
 }
 
-interface CertificationItem {
+export interface CertificationItem {
   name: string;
   issuer: string;
   date: string;
 }
 
-interface AwardItem {
+export interface AwardItem {
   title: string;
   issuer: string;
   date: string;
 }
-
-interface ResumeState {
-  resume: Partial<ResumeData>;
-  setResume: (resume: Partial<ResumeData>) => void;
-  loadResume: () => Promise<void>;
-}
-export const useResumeStore = create<ResumeState>((set) => ({
-  resume: {},
-  setResume: (resume) => set({ resume }),
-  loadResume: async () => {
-    try {
-      const data = await fetchResumeData();
-      // Map objective to summary if needed
-      const mappedData = {
-        ...data,
-        summary: data.objective, // Map API's objective to preview's summary
-      };
-      set({ resume: mappedData });
-    } catch (error) {
-      console.error("Failed to load resume:", error);
-    }
-  },
-}));

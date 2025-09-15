@@ -23,7 +23,7 @@ interface ProjectItem {
 }
 
 interface ResumeData {
-  name: string;
+  full_name: string;
   title: string;
   email: string;
   phone: string;
@@ -87,7 +87,7 @@ export default function ResumePreview({ data }: ResumePreviewProps) {
       {/* Header */}
       <div className="text-center mb-4">
         <h1 className="text-xl font-bold text-black print:text-2xl print:leading-tight">
-          {data.name || "Your Name"}
+          {data.full_name || "Your Name"}
         </h1>
         <p className="text-sm text-gray-800 print:text-base print:font-medium">
           {data.title || "Professional Title"}
@@ -276,6 +276,12 @@ export default function ResumePreview({ data }: ResumePreviewProps) {
           )}
         </div>
       </div>
+      <button
+        className="w-fit mx-auto font-bold p-2 print:hidden bg-blue-200"
+        onClick={() => window.print()}
+      >
+        Export PDF
+      </button>
     </div>
   );
 }

@@ -43,7 +43,7 @@ export const fetchResumeData = async () => {
 };
 
 // Save resume data
-export const saveResumeData = async (resume: any) => {
+export const saveResumeData = async (resume: any) => { /* eslint-disable-line @typescript-eslint/no-explicit-any */
   const token = getToken();
   if (!token) throw new Error("No token found");
   try {

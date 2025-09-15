@@ -28,8 +28,8 @@ interface ProjectItem {
 interface OnboardingStepProps {
   stepKey: string;
   stepType?: string;
-  value: string | any[];
-  onChange: (value: string | any[]) => void;
+  value: string | any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  onChange: (value: string | any[]) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
   onAddItem?: (item: EducationItem | ExperienceItem | ProjectItem) => void;
 }
 
