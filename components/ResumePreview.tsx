@@ -276,12 +276,14 @@ export default function ResumePreview({ data }: ResumePreviewProps) {
           )}
         </div>
       </div>
-      <button
-        className="w-fit mx-auto font-bold p-2 print:hidden bg-blue-200"
-        onClick={() => window.print()}
-      >
-        Export PDF
-      </button>
+      <div className="flex justify-center mt-4">
+        <button
+          className="w-fit rounded-md cursor-pointer font-bold p-2 print:hidden bg-blue-200 hover:bg-blue-300 transition-colors"
+          onClick={() => window.print()}
+        >
+          Export PDF
+        </button>
+      </div>
     </div>
   );
 }

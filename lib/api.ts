@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // const API_BASE_URL = "https://pavetheway-backend.onrender.com/api";
-const API_BASE_URL = "http://localhost:8000/api";
+const API_BASE_URL = "https://pavetheway-backend.onrender.com/api";
 
 // Helper to get token from localStorage
 const getToken = () => localStorage.getItem("token");
@@ -55,7 +55,10 @@ export const saveResumeData = async (resume: any) => { /* eslint-disable-line @t
       delete data.experience;
     }
     await axios.patch(`${API_BASE_URL}/resume/`, data, {
-      headers: { Authorization: `Token ${token}` },
+      headers: {
+        Authorization: `Token ${token}`,
+        "Content-Type": "application/json",
+      },
     });
   } catch (error) {
     console.error("Error saving resume:", error);
