@@ -89,7 +89,6 @@ export default function Home() {
   const fieldValue = resume[fieldKey as keyof typeof resume];
 
   // Helper: return proper default type if null
-  // Helper: return proper default type if null
   const getDefaultValue = (step: Step): string | any[] => { // eslint-disable-line @typescript-eslint/no-explicit-any
     if (
       [
@@ -105,6 +104,39 @@ export default function Home() {
       return [];
     }
     return "";
+  };
+
+  // Handler for adding new items to arrays
+  const handleAddItem = (item: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    if (Array.isArray(resume[fieldKey])) {
+      const currentItems = resume[fieldKey] as any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+      setResume({ ...resume, [fieldKey]: [...currentItems, item] });
+    } else {
+      setResume({ ...resume, [fieldKey]: [item] as any }); // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+  };
+
+  // Handler for updating existing items in arrays
+  const handleUpdateItem = (index: number, item: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    if (Array.isArray(resume[fieldKey])) {
+      const currentItems = [...(resume[fieldKey] as any[])]; // eslint-disable-line @typescript-eslint/no-explicit-any
+      currentItems[index] = item;
+      setResume({ ...resume, [fieldKey]: currentItems });
+    }
+  };
+
+  // Handler for deleting items from arrays
+  const handleDeleteItem = (index: number) => {
+    if (Array.isArray(resume[fieldKey])) {
+      const currentItems = [...(resume[fieldKey] as any[])]; // eslint-disable-line @typescript-eslint/no-explicit-any
+      currentItems.splice(index, 1);
+      setResume({ ...resume, [fieldKey]: currentItems });
+    }
+  };
+
+  // Handler for regular field changes
+  const handleChange = (value: ResumeData[typeof fieldKey]) => {
+    setResume({ ...resume, [fieldKey]: value });
   };
 
   return (
@@ -140,17 +172,10 @@ export default function Home() {
             value={
               (fieldValue as string | any[]) ?? getDefaultValue(currentStepData) // eslint-disable-line @typescript-eslint/no-explicit-any
             }
-            onChange={(value: ResumeData[typeof fieldKey]) =>
-              setResume({ ...resume, [fieldKey]: value })
-            }
-            onAddItem={(item: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
-              if (Array.isArray(resume[fieldKey])) {
-                const currentItems = resume[fieldKey] as any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
-                setResume({ ...resume, [fieldKey]: [...currentItems, item] });
-              } else {
-                setResume({ ...resume, [fieldKey]: [item] as any }); // eslint-disable-line @typescript-eslint/no-explicit-any
-              }
-            }}
+            onChange={handleChange}
+            onAddItem={handleAddItem}
+            onUpdateItem={handleUpdateItem}
+            onDeleteItem={handleDeleteItem}
           />
 
           <div className="flex justify-between mt-8">

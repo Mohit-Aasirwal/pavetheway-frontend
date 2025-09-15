@@ -31,6 +31,11 @@ interface OnboardingStepProps {
   value: string | any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
   onChange: (value: string | any[]) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
   onAddItem?: (item: EducationItem | ExperienceItem | ProjectItem) => void;
+  onUpdateItem?: (
+    index: number,
+    item: EducationItem | ExperienceItem | ProjectItem
+  ) => void;
+  onDeleteItem?: (index: number) => void;
 }
 
 export default function OnboardingStep({
@@ -39,6 +44,8 @@ export default function OnboardingStep({
   value,
   onChange,
   onAddItem,
+  onUpdateItem,
+  onDeleteItem,
 }: OnboardingStepProps) {
   const [educationItem, setEducationItem] = useState<EducationItem>({
     institution: "",
@@ -61,6 +68,7 @@ export default function OnboardingStep({
     endDate: "",
     description: "",
   });
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   const handleEducationChange = (
     field: keyof EducationItem,
@@ -68,12 +76,14 @@ export default function OnboardingStep({
   ) => {
     setEducationItem({ ...educationItem, [field]: fieldValue });
   };
+
   const handleProjectChange = (
     field: keyof ProjectItem,
     fieldValue: string | string[]
   ) => {
     setProjectItem({ ...projectItem, [field]: fieldValue });
   };
+
   const handleExperienceChange = (
     field: keyof ExperienceItem,
     fieldValue: string
@@ -81,10 +91,201 @@ export default function OnboardingStep({
     setExperienceItem({ ...experienceItem, [field]: fieldValue });
   };
 
+  const handleEdit = (index: number) => {
+    setEditingIndex(index);
+    const items = Array.isArray(value) ? value : [];
+    const item = items[index];
+
+    if (stepType === "education") {
+      setEducationItem(item as EducationItem);
+    } else if (stepType === "projects") {
+      setProjectItem(item as ProjectItem);
+    } else if (stepType === "experience") {
+      setExperienceItem(item as ExperienceItem);
+    }
+  };
+
+  const handleSaveEdit = () => {
+    if (editingIndex !== null && onUpdateItem) {
+      if (stepType === "education") {
+        onUpdateItem(editingIndex, educationItem);
+      } else if (stepType === "projects") {
+        onUpdateItem(editingIndex, projectItem);
+      } else if (stepType === "experience") {
+        onUpdateItem(editingIndex, experienceItem);
+      }
+    }
+    handleCancelEdit();
+  };
+
+  const handleCancelEdit = () => {
+    setEditingIndex(null);
+    setEducationItem({
+      institution: "",
+      degree: "",
+      field: "",
+      startDate: "",
+      endDate: "",
+    });
+    setProjectItem({
+      name: "",
+      description: "",
+      technologies: [],
+      startDate: "",
+      endDate: "",
+    });
+    setExperienceItem({
+      company: "",
+      position: "",
+      startDate: "",
+      endDate: "",
+      description: "",
+    });
+  };
+
+  const handleDelete = (index: number) => {
+    if (onDeleteItem) {
+      onDeleteItem(index);
+    }
+  };
+
+  const renderExistingItems = () => {
+    if (!Array.isArray(value) || value.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="space-y-3 mb-6">
+        <h4 className="text-sm font-medium text-gray-700">
+          Existing {stepType}:
+        </h4>
+        {value.map((item, index) => (
+          <div
+            key={index}
+            className="p-4 border border-gray-200 rounded-md bg-gray-50"
+          >
+            {stepType === "education" && (
+              <div className="space-y-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h5 className="font-medium text-gray-900">
+                      {(item as EducationItem).degree} in{" "}
+                      {(item as EducationItem).field}
+                    </h5>
+                    <p className="text-sm text-gray-600">
+                      {(item as EducationItem).institution}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {(item as EducationItem).startDate} -{" "}
+                      {(item as EducationItem).endDate}
+                    </p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleEdit(index)}
+                      className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(index)}
+                      className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {stepType === "projects" && (
+              <div className="space-y-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h5 className="font-medium text-gray-900">
+                      {(item as ProjectItem).name}
+                    </h5>
+                    <p className="text-sm text-gray-600">
+                      {(item as ProjectItem).description}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Technologies:{" "}
+                      {(item as ProjectItem).technologies?.join(", ")}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {(item as ProjectItem).startDate} -{" "}
+                      {(item as ProjectItem).endDate}
+                    </p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleEdit(index)}
+                      className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(index)}
+                      className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {stepType === "experience" && (
+              <div className="space-y-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h5 className="font-medium text-gray-900">
+                      {(item as ExperienceItem).position}
+                    </h5>
+                    <p className="text-sm text-gray-600">
+                      {(item as ExperienceItem).company}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {(item as ExperienceItem).description}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {(item as ExperienceItem).startDate} -{" "}
+                      {(item as ExperienceItem).endDate}
+                    </p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleEdit(index)}
+                      className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(index)}
+                      className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const renderInput = () => {
     if (stepType === "projects") {
       return (
         <div className="space-y-4">
+          {renderExistingItems()}
+
+          <h4 className="text-sm font-medium text-gray-700">
+            {editingIndex !== null ? "Edit Project:" : "Add New Project:"}
+          </h4>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Project Name
@@ -142,7 +343,6 @@ export default function OnboardingStep({
                   handleProjectChange("startDate", e.target.value)
                 }
                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                placeholder="MM/YYYY"
               />
             </div>
             <div>
@@ -154,32 +354,57 @@ export default function OnboardingStep({
                 value={projectItem.endDate}
                 onChange={(e) => handleProjectChange("endDate", e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                placeholder="MM/YYYY or Present"
               />
             </div>
           </div>
 
-          <button
-            onClick={() => {
-              onAddItem && onAddItem({ ...projectItem });
-              setProjectItem({
-                name: "",
-                description: "",
-                technologies: [],
-                startDate: "",
-                endDate: "",
-              });
-            }}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
-          >
-            Add Project
-          </button>
+          <div className="flex space-x-2">
+            {editingIndex !== null ? (
+              <>
+                <button
+                  onClick={handleSaveEdit}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+                >
+                  Save Changes
+                </button>
+                <button
+                  onClick={handleCancelEdit}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm"
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => {
+                  onAddItem && onAddItem({ ...projectItem });
+                  setProjectItem({
+                    name: "",
+                    description: "",
+                    technologies: [],
+                    startDate: "",
+                    endDate: "",
+                  });
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+              >
+                Add Project
+              </button>
+            )}
+          </div>
         </div>
       );
     }
+
     if (stepType === "education") {
       return (
         <div className="space-y-4">
+          {renderExistingItems()}
+
+          <h4 className="text-sm font-medium text-gray-700">
+            {editingIndex !== null ? "Edit Education:" : "Add New Education:"}
+          </h4>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -236,7 +461,6 @@ export default function OnboardingStep({
                   handleEducationChange("startDate", e.target.value)
                 }
                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                placeholder="MM/YYYY"
               />
             </div>
             <div>
@@ -250,26 +474,44 @@ export default function OnboardingStep({
                   handleEducationChange("endDate", e.target.value)
                 }
                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                placeholder="MM/YYYY or Present"
               />
             </div>
           </div>
 
-          <button
-            onClick={() => {
-              onAddItem && onAddItem({ ...educationItem });
-              setEducationItem({
-                institution: "",
-                degree: "",
-                field: "",
-                startDate: "",
-                endDate: "",
-              });
-            }}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
-          >
-            Add Education
-          </button>
+          <div className="flex space-x-2">
+            {editingIndex !== null ? (
+              <>
+                <button
+                  onClick={handleSaveEdit}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+                >
+                  Save Changes
+                </button>
+                <button
+                  onClick={handleCancelEdit}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm"
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => {
+                  onAddItem && onAddItem({ ...educationItem });
+                  setEducationItem({
+                    institution: "",
+                    degree: "",
+                    field: "",
+                    startDate: "",
+                    endDate: "",
+                  });
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+              >
+                Add Education
+              </button>
+            )}
+          </div>
         </div>
       );
     }
@@ -277,6 +519,12 @@ export default function OnboardingStep({
     if (stepType === "experience") {
       return (
         <div className="space-y-4">
+          {renderExistingItems()}
+
+          <h4 className="text-sm font-medium text-gray-700">
+            {editingIndex !== null ? "Edit Experience:" : "Add New Experience:"}
+          </h4>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -320,7 +568,6 @@ export default function OnboardingStep({
                   handleExperienceChange("startDate", e.target.value)
                 }
                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                placeholder="MM/YYYY"
               />
             </div>
             <div>
@@ -334,7 +581,6 @@ export default function OnboardingStep({
                   handleExperienceChange("endDate", e.target.value)
                 }
                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                placeholder="MM/YYYY or Present"
               />
             </div>
           </div>
@@ -353,21 +599,40 @@ export default function OnboardingStep({
             />
           </div>
 
-          <button
-            onClick={() => {
-              onAddItem && onAddItem({ ...experienceItem });
-              setExperienceItem({
-                company: "",
-                position: "",
-                startDate: "",
-                endDate: "",
-                description: "",
-              });
-            }}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
-          >
-            Add Experience
-          </button>
+          <div className="flex space-x-2">
+            {editingIndex !== null ? (
+              <>
+                <button
+                  onClick={handleSaveEdit}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+                >
+                  Save Changes
+                </button>
+                <button
+                  onClick={handleCancelEdit}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm"
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => {
+                  onAddItem && onAddItem({ ...experienceItem });
+                  setExperienceItem({
+                    company: "",
+                    position: "",
+                    startDate: "",
+                    endDate: "",
+                    description: "",
+                  });
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+              >
+                Add Experience
+              </button>
+            )}
+          </div>
         </div>
       );
     }

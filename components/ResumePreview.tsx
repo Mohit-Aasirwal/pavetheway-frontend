@@ -31,7 +31,7 @@ interface ResumeData {
   linkedin: string;
   github: string;
   portfolio: string;
-  summary: string;
+  objective: string;
   education: EducationItem[] | string;
   experience: ExperienceItem[] | string;
   projects: ProjectItem[] | string;
@@ -107,13 +107,13 @@ export default function ResumePreview({ data }: ResumePreviewProps) {
       </div>
 
       {/* Summary */}
-      {data.summary && (
+      {data.objective && (
         <section className="mb-3">
           <h2 className="text-sm font-bold border-b border-gray-300 pb-1 mb-1 print:text-base print:font-semibold">
             SUMMARY
           </h2>
           <p className="text-justify print:text-sm break-words">
-            {data.summary}
+            {data.objective}
           </p>
         </section>
       )}
